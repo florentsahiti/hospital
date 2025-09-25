@@ -33,7 +33,7 @@ const AddDoctor = () => {
 
             formData.append('image', docImg)
             formData.append('name', name)
-            formData.append('name', name)
+            formData.append('email', email)
             formData.append('password', password)
             formData.append('experience', experience)
             formData.append('fees', Number(fees))
@@ -49,13 +49,26 @@ const AddDoctor = () => {
 
             const { data } = await axios.post(backendUrl + '/api/admin/add-doctor', formData, { headers: { aToken } })
 
-            if(data.success){
+            if (data.success) {
                 toast.success(data.message)
-            }else{
+                // Reset form after successful submission
+                setName('')
+                setEmail('')
+                setPassword('')
+                setExperience('1 Year')
+                setFees('')
+                setSpeciality('General physician')
+                setDegree('')
+                setAddress1('')
+                setAddress2('')
+                setAbout('')
+                setDocImg(false)
+            } else {
                 toast.error(data.message)
             }
         } catch (error) {
-
+            console.error('Error adding doctor:', error)
+            toast.error(error.response?.data?.message || 'Failed to add doctor')
         }
     }
 

@@ -18,6 +18,14 @@ app.use(cors());
 // api endpoints
 app.use('/api/admin', adminRouter)
 
+// Debug: Log all registered routes
+console.log('Registered admin routes:');
+adminRouter.stack.forEach(function (r) {
+  if (r.route && r.route.path) {
+    console.log('  ' + Object.keys(r.route.methods).join(', ').toUpperCase() + ' /api/admin' + r.route.path);
+  }
+});
+
 
 app.get('/', (req, res) => {
   res.send('API WORKING great');
