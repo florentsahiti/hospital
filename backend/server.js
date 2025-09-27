@@ -30,6 +30,13 @@ adminRouter.stack.forEach(function (r) {
   }
 });
 
+console.log('Registered user routes:');
+userRouter.stack.forEach(function (r) {
+  if (r.route && r.route.path) {
+    console.log('  ' + Object.keys(r.route.methods).join(', ').toUpperCase() + ' /api/user' + r.route.path);
+  }
+});
+
 
 app.get('/', (req, res) => {
   res.send('API WORKING great');
