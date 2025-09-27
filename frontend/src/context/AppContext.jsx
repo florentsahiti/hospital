@@ -9,13 +9,13 @@ const AppContextProvider = (props) => {
 
 
     const currencySymbol = '$'
-    const backendUrl = import.meta.env.VITE_BACKEND_URL
-    const [doctors,setDoctors] = useState([])
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000'
 
-    const value = {
-        doctors,
-        currencySymbol
-    }
+    const [doctors,setDoctors] = useState([])
+    const [token,setToken] = useState(localStorage.getItem('token')?localStorage.getItem('token'):false)
+
+
+   
 
     const getDoctorsData = async () => {
         try{
@@ -33,9 +33,33 @@ const AppContextProvider = (props) => {
         }
     }
 
+     const value = {
+        doctors,
+        currencySymbol,
+        token,setToken,
+        backendUrl
+    }
+
     useEffect(()=>{
         getDoctorsData()
+        // Initialize axios header if token exists
+        const existingToken = localStorage.getItem('token');
+        if(existingToken){
+            axios.defaults.headers.common['token'] = existingToken;
+        }
     },[])
+
+    useEffect(()=>{
+        if(token){
+            localStorage.setItem('token', token)
+            // Set axios default header for authenticated requests
+            axios.defaults.headers.common['token'] = token;
+        } else {
+            localStorage.removeItem('token')
+            // Remove token from axios headers
+            delete axios.defaults.headers.common['token'];
+        }
+    },[token])
 
     return (
         <AppContext.Provider value={value}>
