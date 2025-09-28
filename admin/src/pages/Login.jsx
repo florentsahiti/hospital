@@ -7,12 +7,14 @@ import { DoctorContext } from '../context/DoctorContext'
 
 const Login = () => {
 
+    
+
     const [state, setState] = useState('Admin')
 
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
 
-     const {aToken,setAToken,backendUrl} = useContext(AdminContext)
+     const {setAToken,backendUrl} = useContext(AdminContext)
      const {setDToken} = useContext(DoctorContext)
 
 
