@@ -4,12 +4,15 @@ import { AppContext } from '../context/AppContext';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useState } from 'react';
+import PaymentModal from '../components/PaymentModal';
 
 const MyAppointments = () => {
 
   const { backendUrl, token, getDoctorsData } = useContext(AppContext)
 
   const [appointments, setAppointments] = useState([])
+  const [selectedAppointment, setSelectedAppointment] = useState(null)
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
   const months = [" ", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
   const slotDateFormat = (slotDate) => {
@@ -50,6 +53,22 @@ const MyAppointments = () => {
     }
   }
 
+  const handlePayOnline = (appointment) => {
+    setSelectedAppointment(appointment)
+    setShowPaymentModal(true)
+  }
+
+  const handlePaymentSuccess = () => {
+    getUserAppointments()
+    setShowPaymentModal(false)
+    setSelectedAppointment(null)
+  }
+
+  const handleClosePaymentModal = () => {
+    setShowPaymentModal(false)
+    setSelectedAppointment(null)
+  }
+
 
   useEffect(() => {
     if (token) {
@@ -77,7 +96,19 @@ const MyAppointments = () => {
               </div>
               <div></div>
               <div className='flex flex-col gap-2 justify-end'>
-                {!item.cancelled && <button className='w-full text-sm text-stone-500 text-center px-6 py-2 border hover:bg-primary hover:text-white transition-all duration-300'>Pay Online</button>}
+                {!item.cancelled && item.paymentStatus !== 'paid' && (
+                  <button 
+                    onClick={() => handlePayOnline(item)} 
+                    className='w-full text-sm text-stone-500 text-center px-6 py-2 border hover:bg-primary hover:text-white transition-all duration-300'
+                  >
+                    Pay Online
+                  </button>
+                )}
+                {!item.cancelled && item.paymentStatus === 'paid' && (
+                  <button className='w-full text-sm text-green-600 text-center px-6 py-2 border border-green-600 bg-green-50'>
+                    Payment Completed
+                  </button>
+                )}
                 {!item.cancelled && <button onClick={() => cancelAppointment(item._id)} className='w-full text-sm text-stone-500 text-center px-6 py-2 border hover:bg-red-600 hover:text-white transition-all duration-300'>Cancel appointment</button>}
                 {item.cancelled && <button className='sm:min-w-48 py-2 border border-red-500 rounded text-red-500'>Appointment Cancelled</button>}
              
@@ -86,6 +117,16 @@ const MyAppointments = () => {
           ))
         }
       </div>
+      
+      {showPaymentModal && (
+        <PaymentModal
+          appointment={selectedAppointment}
+          backendUrl={backendUrl}
+          token={token}
+          onPaymentSuccess={handlePaymentSuccess}
+          onClose={handleClosePaymentModal}
+        />
+      )}
     </div>
   )
 }

@@ -2,21 +2,22 @@ import validator from 'validator';
 import bcrypt from 'bcryptjs';
 import { v2 as cloudinary } from 'cloudinary';
 import doctorModel from '../models/doctorModel.js';
-import jwt from 'jsonwebtoken'; 
+import jwt from 'jsonwebtoken';
+import appointmentModel from '../models/appointmentModel.js';
 
 
 // API for adding doctor
 const addDoctor = async (req, res) => {
     try {
         console.log('BODY:', req.body);
-console.log('FILE:', req.file);
+        console.log('FILE:', req.file);
         const { name, email, password, speciality, degree, experience, fees, about, address } = req.body;
         const imageFile = req.file;
         if (!imageFile) {
-    return res.json({ success: false, message: 'Image file is required' });
-}
+            return res.json({ success: false, message: 'Image file is required' });
+        }
         // checking for alll data to add doctor
-        if (!name || !email || !password || !speciality || !degree || !experience || !fees || !address || !about ) {
+        if (!name || !email || !password || !speciality || !degree || !experience || !fees || !address || !about) {
             return res.json({ success: false, message: 'Missing details' });
         }
 
@@ -60,7 +61,7 @@ console.log('FILE:', req.file);
 
     } catch (error) {
         console.log(error);
-        res.json({ success: false, message:error.message });
+        res.json({ success: false, message: error.message });
     }
 }
 
@@ -86,16 +87,33 @@ const loginAdmin = async (req, res) => {
 
 // Api to get all doctors list for admin panel
 const allDoctors = async (req, res) => {
-    try{
+    try {
 
         const doctors = await doctorModel.find({}).select('-password')
-        res.json({success: true, doctors})
-    }catch(error){
+        res.json({ success: true, doctors })
+    } catch (error) {
         console.log(error);
         res.json({ success: false, message: error.message });
     }
 }
 
-export { addDoctor, loginAdmin, allDoctors };
+
+//API to get all appointmens list
+const appointmentsAdmin = async (req, res) => {
+    try {
+
+        const appointments = await appointmentModel.find({})
+        res.json({ success: true, appointments })
+
+    } catch (error) {
+        console.log(error)
+        res.json({ success: false, message: error.message })
+    }
+}
+
+
+
+
+export { addDoctor, loginAdmin, allDoctors, appointmentsAdmin };
 
 
