@@ -3,16 +3,25 @@ import cors from 'cors';
 import 'dotenv/config';
 import connectDB from './config/mongodb.js';
 import connectCloudinary from './config/cloudinary.js';
+import { testConnection, syncDatabase } from './models/mysql/index.js';
 import adminRouter from './routes/adminRoute.js';
 import doctorRouter from './routes/doctorRoute.js'
 import userRouter from './routes/userRoute.js'
 import paymentRouter from './routes/paymentRoute.js'
+import medicalRecordRouter from './routes/medicalRecordRoute.js'
 
 // app config
 const app = express();
 const port = process.env.PORT || 4000;
 connectDB();
 connectCloudinary();
+
+// Initialize MySQL connection and sync database
+const initializeMySQL = async () => {
+    await testConnection();
+    await syncDatabase();
+};
+initializeMySQL();
 
 // middlewares
 app.use(express.json());
@@ -23,6 +32,7 @@ app.use('/api/admin', adminRouter)
 app.use('/api/doctor', doctorRouter)
 app.use('/api/user', userRouter)
 app.use('/api/payment', paymentRouter)
+app.use('/api/medical-records', medicalRecordRouter)
 
 // Debug: Log all registered routes
 console.log('Registered admin routes:');

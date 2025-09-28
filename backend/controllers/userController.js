@@ -100,11 +100,26 @@ const updateProfile = async (req, res) => {
         const { userId, name, phone, address, dob, gender } = req.body
         const imageFile = req.file
 
+        console.log('Update profile request:', { userId, name, phone, dob, gender })
+        console.log('Address:', address)
+
         if (!name || !phone || !dob || !gender) {
             return res.json({ success: false, message: "Data missing" })
         }
 
-        await userModel.findByIdAndUpdate(userId, { name, phone, address: JSON.parse(address), dob, gender })
+        const updateData = { 
+            name, 
+            phone, 
+            address: JSON.parse(address), 
+            dob, 
+            gender 
+        }
+        
+        console.log('Updating user with data:', updateData)
+
+        const updatedUser = await userModel.findByIdAndUpdate(userId, updateData, { new: true })
+        
+        console.log('User updated successfully:', updatedUser._id)
 
         if (imageFile) {
             // Upload image to cloudinary
@@ -112,12 +127,13 @@ const updateProfile = async (req, res) => {
             const imageURL = imageUpload.secure_url
 
             await userModel.findByIdAndUpdate(userId, { image: imageURL })
+            console.log('Image updated successfully')
         }
 
         res.json({ success: true, message: "Profile Updated" })
 
     } catch (error) {
-        console.log(error);
+        console.log('Error updating profile:', error);
         res.json({ success: false, message: error.message });
     }
 }

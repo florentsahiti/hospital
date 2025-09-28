@@ -14,6 +14,7 @@ const DoctorContextProvider = (props) => {
     const [appointments, setAppointments] = useState([])
     const [patients, setPatients] = useState([])
     const [profile, setProfile] = useState(null)
+    const [doctorId, setDoctorId] = useState(null)
 
     const getDashboardData = async () => {
         try {
@@ -77,6 +78,7 @@ const DoctorContextProvider = (props) => {
             const { data } = await axios.get(backendUrl + '/api/doctor/profile', { headers: { dToken } })
             if (data.success) {
                 setProfile(data.profile)
+                setDoctorId(data.profile._id) // Set doctor ID from profile
             } else {
                 toast.error(data.message)
             }
@@ -151,6 +153,7 @@ const DoctorContextProvider = (props) => {
         appointments, setAppointments,
         patients, setPatients,
         profile, setProfile,
+        doctorId, setDoctorId,
         getDashboardData,
         getAppointments,
         getPatients,

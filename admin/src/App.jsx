@@ -16,6 +16,7 @@ import DoctorDashboard from './pages/Doctor/DoctorDashboard'
 import DoctorSidebar from './components/DoctorSidebar'
 import MyAppointments from './pages/Doctor/MyAppointments'
 import MyPatients from './pages/Doctor/MyPatients'
+import MedicalRecords from './pages/Doctor/MedicalRecords'
 import DoctorProfile from './pages/Doctor/DoctorProfile'
 
 
@@ -54,6 +55,7 @@ const App = () => {
               <Route path='/doctor-dashboard' element={<DoctorDashboard />} />
               <Route path='/my-appointments' element={<MyAppointments />} />
               <Route path='/my-patients' element={<MyPatients />} />
+              <Route path='/medical-records' element={<MedicalRecords />} />
               <Route path='/doctor-profile' element={<DoctorProfile />} />
             </>
           )}

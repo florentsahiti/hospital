@@ -18,7 +18,7 @@ const MyProfile = () => {
 
       const formData = new FormData()
 
-
+      formData.append('userId', userData._id)
       formData.append('name',userData.name)
       formData.append('phone',userData.phone)
       formData.append('address',JSON.stringify(userData.address))
@@ -26,6 +26,14 @@ const MyProfile = () => {
       formData.append('dob',userData.dob)
 
       image && formData.append('image',image)
+
+      console.log('Sending profile update:', {
+        userId: userData._id,
+        name: userData.name,
+        phone: userData.phone,
+        dob: userData.dob,
+        gender: userData.gender
+      })
 
       const {data} = await axios.post(backendUrl + '/api/user/update-profile', formData,{headers:{token}})
 
@@ -155,9 +163,9 @@ const MyProfile = () => {
               className="max-w-28 bg-gray-100"
               type="date"
               onChange={(e) =>
-                setUserData((prev) => ({ ...prev, bod: e.target.value }))
+                setUserData((prev) => ({ ...prev, dob: e.target.value }))
               }
-              value={userData.bod}
+              value={userData.dob}
             />
           ) : (
             <p className="text-gray-400">{userData.dob}</p>
