@@ -5,6 +5,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useState } from 'react';
 import PaymentModal from '../components/PaymentModal';
+import {useNavigate} from 'react-router-dom'
 
 const MyAppointments = () => {
 
@@ -19,6 +20,8 @@ const MyAppointments = () => {
     const dateArray = slotDate.split('_')
     return dateArray[0] + " " + months[Number(dateArray[1])] + " " + dateArray[2]
   }
+
+  const navigate = useNavigate()
 
   const getUserAppointments = async () => {
     try {
