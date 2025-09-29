@@ -13,6 +13,7 @@ const MedicalRecords = () => {
   const [showAddPrescription, setShowAddPrescription] = useState(false)
   const [showAddVitalSigns, setShowAddVitalSigns] = useState(false)
   const [showAddLabResult, setShowAddLabResult] = useState(false)
+  const [showPatientProfile, setShowPatientProfile] = useState(false)
   const [loading, setLoading] = useState(false)
   const [syncing, setSyncing] = useState(false)
 
@@ -62,6 +63,18 @@ const MedicalRecords = () => {
     orderedBy: '',
     notes: '',
     filePath: ''
+  })
+
+  // Form states for patient profile
+  const [patientProfile, setPatientProfile] = useState({
+    bloodType: '',
+    allergies: '',
+    emergencyContactName: '',
+    emergencyContactPhone: '',
+    emergencyContactRelation: '',
+    medicalHistory: '',
+    insuranceProvider: '',
+    insuranceNumber: ''
   })
 
   useEffect(() => {
@@ -303,6 +316,55 @@ const MedicalRecords = () => {
     }
   }
 
+  // Update patient profile
+  const handleUpdatePatientProfile = async (e) => {
+    e.preventDefault()
+    
+    if (!selectedPatient) {
+      toast.error('Please select a patient first.')
+      return
+    }
+    
+    try {
+      const emergencyContact = {
+        name: patientProfile.emergencyContactName,
+        phone: patientProfile.emergencyContactPhone,
+        relation: patientProfile.emergencyContactRelation
+      }
+      
+      const { data } = await axios.post(backendUrl + '/api/medical-records/patient-profile', {
+        userId: selectedPatient._id,
+        bloodType: patientProfile.bloodType,
+        allergies: patientProfile.allergies,
+        emergencyContact: emergencyContact,
+        medicalHistory: patientProfile.medicalHistory,
+        insuranceProvider: patientProfile.insuranceProvider,
+        insuranceNumber: patientProfile.insuranceNumber
+      }, { headers: { dToken } })
+
+      if (data.success) {
+        toast.success('Patient profile updated successfully')
+        setShowPatientProfile(false)
+        setPatientProfile({
+          bloodType: '',
+          allergies: '',
+          emergencyContactName: '',
+          emergencyContactPhone: '',
+          emergencyContactRelation: '',
+          medicalHistory: '',
+          insuranceProvider: '',
+          insuranceNumber: ''
+        })
+        fetchMedicalRecords(selectedPatient._id)
+      } else {
+        toast.error(data.message || 'Failed to update patient profile')
+      }
+    } catch (error) {
+      console.error('Error updating patient profile:', error)
+      toast.error('Failed to update patient profile: ' + (error.response?.data?.message || error.message))
+    }
+  }
+
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A'
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -325,12 +387,20 @@ const MedicalRecords = () => {
             {syncing ? 'Syncing...' : 'Sync Patients'}
           </button>
           {selectedPatient && (
-            <button
-              onClick={() => setShowAddRecord(true)}
-              className='bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors'
-            >
-              Add New Record
-            </button>
+            <>
+              <button
+                onClick={() => setShowPatientProfile(true)}
+                className='bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors'
+              >
+                Update Patient Profile
+              </button>
+              <button
+                onClick={() => setShowAddRecord(true)}
+                className='bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors'
+              >
+                Add New Record
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -974,6 +1044,137 @@ const MedicalRecords = () => {
                   className='px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors'
                 >
                   Add Lab Result
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Patient Profile Modal */}
+      {showPatientProfile && (
+        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
+          <div className='bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto'>
+            <h2 className='text-xl font-semibold mb-4'>Update Patient Profile</h2>
+            <form onSubmit={handleUpdatePatientProfile} className='space-y-4'>
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                <div>
+                  <label className='block text-sm font-medium text-gray-700 mb-1'>Blood Type</label>
+                  <select
+                    value={patientProfile.bloodType}
+                    onChange={(e) => setPatientProfile({...patientProfile, bloodType: e.target.value})}
+                    className='w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500'
+                  >
+                    <option value=''>Select Blood Type</option>
+                    <option value='A+'>A+</option>
+                    <option value='A-'>A-</option>
+                    <option value='B+'>B+</option>
+                    <option value='B-'>B-</option>
+                    <option value='AB+'>AB+</option>
+                    <option value='AB-'>AB-</option>
+                    <option value='O+'>O+</option>
+                    <option value='O-'>O-</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className='block text-sm font-medium text-gray-700 mb-1'>Allergies</label>
+                  <textarea
+                    value={patientProfile.allergies}
+                    onChange={(e) => setPatientProfile({...patientProfile, allergies: e.target.value})}
+                    className='w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500'
+                    rows={2}
+                    placeholder='List any known allergies'
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <h3 className='text-lg font-medium text-gray-800 mb-3'>Emergency Contact</h3>
+                <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+                  <div>
+                    <label className='block text-sm font-medium text-gray-700 mb-1'>Name</label>
+                    <input
+                      type='text'
+                      value={patientProfile.emergencyContactName}
+                      onChange={(e) => setPatientProfile({...patientProfile, emergencyContactName: e.target.value})}
+                      className='w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500'
+                      placeholder='Emergency contact name'
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className='block text-sm font-medium text-gray-700 mb-1'>Phone</label>
+                    <input
+                      type='tel'
+                      value={patientProfile.emergencyContactPhone}
+                      onChange={(e) => setPatientProfile({...patientProfile, emergencyContactPhone: e.target.value})}
+                      className='w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500'
+                      placeholder='Phone number'
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className='block text-sm font-medium text-gray-700 mb-1'>Relation</label>
+                    <input
+                      type='text'
+                      value={patientProfile.emergencyContactRelation}
+                      onChange={(e) => setPatientProfile({...patientProfile, emergencyContactRelation: e.target.value})}
+                      className='w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500'
+                      placeholder='e.g., Spouse, Parent, Sibling'
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-1'>Medical History</label>
+                <textarea
+                  value={patientProfile.medicalHistory}
+                  onChange={(e) => setPatientProfile({...patientProfile, medicalHistory: e.target.value})}
+                  className='w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500'
+                  rows={3}
+                  placeholder='Previous medical conditions, surgeries, etc.'
+                />
+              </div>
+              
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                <div>
+                  <label className='block text-sm font-medium text-gray-700 mb-1'>Insurance Provider</label>
+                  <input
+                    type='text'
+                    value={patientProfile.insuranceProvider}
+                    onChange={(e) => setPatientProfile({...patientProfile, insuranceProvider: e.target.value})}
+                    className='w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500'
+                    placeholder='Insurance company name'
+                  />
+                </div>
+                
+                <div>
+                  <label className='block text-sm font-medium text-gray-700 mb-1'>Insurance Number</label>
+                  <input
+                    type='text'
+                    value={patientProfile.insuranceNumber}
+                    onChange={(e) => setPatientProfile({...patientProfile, insuranceNumber: e.target.value})}
+                    className='w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500'
+                    placeholder='Policy number'
+                  />
+                </div>
+              </div>
+              
+              <div className='flex justify-end space-x-3 pt-4'>
+                <button
+                  type='button'
+                  onClick={() => setShowPatientProfile(false)}
+                  className='px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors'
+                >
+                  Cancel
+                </button>
+                <button
+                  type='submit'
+                  className='px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors'
+                >
+                  Update Profile
                 </button>
               </div>
             </form>
