@@ -8,7 +8,8 @@ import {
     addVitalSigns,
     addLabResult,
     getPatientProfile,
-    createOrUpdatePatient
+    createOrUpdatePatient,
+    syncPatientsFromMongoDB
 } from '../controllers/medicalRecordController.js';
 import { authDoctor } from '../middlewares/authDoctor.js';
 import authAdmin from '../middlewares/authAdmin.js';
@@ -33,5 +34,8 @@ medicalRecordRouter.post('/records/:recordId/vital-signs', authDoctor, addVitalS
 
 // Lab results routes
 medicalRecordRouter.post('/records/:recordId/lab-results', authDoctor, addLabResult);
+
+// Sync patients from MongoDB to MySQL
+medicalRecordRouter.post('/sync-patients', authDoctor, syncPatientsFromMongoDB);
 
 export default medicalRecordRouter;

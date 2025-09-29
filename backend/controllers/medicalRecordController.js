@@ -399,6 +399,56 @@ const createOrUpdatePatient = async (req, res) => {
     }
 };
 
+// Sync all MongoDB users to MySQL patients
+const syncPatientsFromMongoDB = async (req, res) => {
+    try {
+        // Import userModel to get MongoDB users
+        const userModel = (await import('../models/userModel.js')).default;
+        
+        // Get all users from MongoDB
+        const mongoUsers = await userModel.find({}, '_id name email phone dateOfBirth');
+        console.log(`Found ${mongoUsers.length} users in MongoDB`);
+        
+        let syncedCount = 0;
+        let createdCount = 0;
+        
+        for (const mongoUser of mongoUsers) {
+            // Check if patient already exists in MySQL
+            let patient = await Patient.findOne({ where: { userId: mongoUser._id.toString() } });
+            
+            if (!patient) {
+                // Create new patient in MySQL
+                patient = await Patient.create({
+                    userId: mongoUser._id.toString(),
+                    medicalRecordNumber: `MR${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                    bloodType: null,
+                    allergies: null,
+                    emergencyContact: null,
+                    medicalHistory: null,
+                    insuranceProvider: null,
+                    insuranceNumber: null
+                });
+                createdCount++;
+                console.log(`Created MySQL patient for user: ${mongoUser.name}`);
+            } else {
+                syncedCount++;
+                console.log(`Patient already exists for user: ${mongoUser.name}`);
+            }
+        }
+        
+        res.json({
+            success: true,
+            message: `Patient sync completed. Created: ${createdCount}, Already existed: ${syncedCount}`,
+            totalMongoUsers: mongoUsers.length,
+            createdCount,
+            syncedCount
+        });
+    } catch (error) {
+        console.error('Error syncing patients:', error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
 export {
     getPatientRecords,
     createMedicalRecord,
@@ -408,5 +458,6 @@ export {
     addVitalSigns,
     addLabResult,
     getPatientProfile,
-    createOrUpdatePatient
+    createOrUpdatePatient,
+    syncPatientsFromMongoDB
 };
